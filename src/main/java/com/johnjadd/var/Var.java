@@ -16,26 +16,27 @@ import com.johnjadd.dev.Dev;
 public class Var implements MyEntity{
 	@Id
 	private Long id;
-	private String localId;
 	private String name;
 	private String type;
-	private Boolean dead;
+	
+	private String calMethod;	// =, sum, avg, max, min
+	private String calParam;	// {"KT01"}
 	
 	@ManyToOne
 	@JoinColumn(name="dev")
-	private Dev   dev;
+	private Dev dev;
 	
 	protected Var() {}
 
-	public Var(Long id, String localId, String name, String type, Dev dev) {
+	public Var(Long id, String name, String type, Dev dev) {
 		super();
 		this.id = id;
-		this.localId = localId;
 		this.name = name;
 		this.type = type;
-		this.dead = false;
-	
 		this.dev = dev;
+		
+		this.calMethod = "=";
+		this.calParam = "";
 	}
 
 	public Long getId() {
@@ -44,14 +45,6 @@ public class Var implements MyEntity{
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getLocalId() {
-		return localId;
-	}
-
-	public void setLocalId(String localId) {
-		this.localId = localId;
 	}
 
 	public String getName() {
@@ -78,12 +71,21 @@ public class Var implements MyEntity{
 		this.dev = dev;
 	}
 
-	public Boolean getDead() {
-		return dead;
+	public String getCalMethod() {
+		return calMethod;
 	}
 
-	public void setDead(Boolean dead) {
-		this.dead = dead;
-	}	
-	
+	public void setCalMethod(String calMethod) {
+		this.calMethod = calMethod;
+	}
+
+	public String getCalParam() {
+		return calParam;
+	}
+
+	public void setCalParam(String calParam) {
+		this.calParam = calParam;
+	}
+
+		
 }

@@ -2,10 +2,9 @@ package com.johnjadd.site;
 
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.johnjadd.MyEntity;
@@ -18,17 +17,17 @@ public class Site implements MyEntity{
 	private Long id;
 	private String name;
 	
-	@OneToMany(mappedBy="site", cascade=CascadeType.ALL)
-	private List<Dev> devs;
+	@OneToOne//(cascade=CascadeType.ALL)
+	private Dev dev;
 	
 	protected Site() {
 	}
 
-	public Site(Long id, String name, List<Dev> devs) {
+	public Site(Long id, String name, Dev dev) {
 		super();
 		this.id = id;
 		this.name = name;
-		this.devs = devs;
+		this.dev = dev;
 	}
 
 	public Long getId() {
@@ -44,12 +43,12 @@ public class Site implements MyEntity{
 		this.name = name;
 	}
 
-	public List<Dev> getDevs() {
-		return devs;
+	public Dev getDev() {
+		return dev;
 	}
 
-	public void setDevs(List<Dev> devs) {
-		this.devs = devs;
+	public void setDev(Dev dev) {
+		this.dev = dev;
 	}
 	
 }

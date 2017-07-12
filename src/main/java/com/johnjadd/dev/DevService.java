@@ -6,8 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.johnjadd.site.Site;
-import com.johnjadd.site.SiteService;
 import com.johnjadd.util.Until;
 import com.johnjadd.var.Var;
 import com.johnjadd.var.VarService;
@@ -20,8 +18,8 @@ public class DevService {
 	@Autowired
 	private VarService varService;
 		
-	@Autowired
-	private SiteService siteService;
+	//@Autowired
+	//private SiteService siteService;
 
 	public List<Dev> getAll(Long siteId) {
 		List<Dev> devs = new ArrayList<>();
@@ -34,47 +32,88 @@ public class DevService {
 		return devRepository.findOne(id);
 	}
 	
-	public Dev patch(Dev dev) {
+	public Dev patch(Long parentId, Dev dev) {
 		if(dev==null) return null;
 		
+		dev.setChildren(null);
 		fillNullProperties(dev);
-
-		if(dev!=null) {
-			devRepository.save(dev);
+		
+		if(dev.hasOffSpring(parentId)) {
+			return null;
 		}
 		
+		if(dev.getParent()!=null) {
+			if(!dev.getParent().getId().equals(parentId)) {
+				Dev parent = getOne(parentId);
+				dev.setParent(parent);
+			}
+		}
+		
+		devRepository.save(dev);
 		return dev;
 	}
 	
-	public Dev save(Long siteId, Dev dev) {
-		Site site = siteService.getOne(siteId);
-		if(site==null) return null;
+	public Dev save(Long parentId, Dev dev) {
+		Dev parent = getOne(parentId);
+		return save(parent, dev);
+	}
+	
+	private Dev save(Dev parent, Dev dev) {
+		setDevsParent(dev, parent);
 		
-		dev.setSite(site);
-		setDevInVars(dev);	
+		setVarsDev(dev);
 		if(correctId(dev)) {
 			////????????????how to make transactions
-			try {
+			/*try {
 				devRepository.delete(dev.getId());
 			}catch(Exception e) {
 				System.out.println(e);
+			}*/
+			delete(dev.getId());
+			
+			if(dev.getChildren() == null) {
+				devRepository.save(dev);
+			}else {
+				Dev dev2Save = new Dev();
+				Until.copyProperties(dev, dev2Save);
+				dev2Save.setChildren(null);
+				
+				devRepository.save(dev2Save);
+				
+				for(Dev child : dev.getChildren()) {
+					save(dev, child);
+				}				
 			}
-			devRepository.save(dev);
 			return dev;
-		}
-		
+		}		
 		return null;
 	}
+		
+	public void setDevsParent(Dev dev, Dev parent) {
+		if(dev == null) return;
+		dev.setParent(parent);
+
+		/*if(dev.getChildren() == null) return;
+		for(Dev dd : dev.getChildren()) {
+			setDevsParent(dd, dev);
+		}*/
+	}
 	
-	public void setDevInVars(Dev dev) {
-		if(dev.getVars()==null) return;
+	public void setVarsDev(Dev dev) {
+		if(dev == null) return;
+		if(dev.getVars() == null) return;
 		for (Var var : dev.getVars()) {
 			var.setDev(dev);
-		}
+		};
+		
+		/*if(dev.getChildren() == null) return;
+		for(Dev dd : dev.getChildren()) {
+			setVarsDev(dd);
+		}*/
 	}
 	
 	public boolean correctId(Dev dev) {
-		Long minId = (dev.getSite().getId())<<16;
+		/*Long minId = (dev.getSite().getId())<<16;
 		Long maxId = (dev.getSite().getId()+1)<<16;
 
 		if(dev.getId() < minId) {
@@ -83,7 +122,7 @@ public class DevService {
 		
 		if(dev.getId() > maxId) {
 			return false;
-		}
+		}*/
 		
 		if(dev.getVars() != null) {
 			List<Var> illegalIdVars = new ArrayList<>();
@@ -94,10 +133,18 @@ public class DevService {
 			}
 			dev.getVars().removeAll(illegalIdVars);
 		}
+		
+		/*if(dev.getChildren() != null) {
+			for(Dev dd : dev.getChildren()) {
+				if(correctId(dd) == false) {
+					return false;
+				}	
+			}
+		}*/
 		return true;
 	}
 	
-	public boolean fillNullProperties(Dev dev) {
+	private boolean fillNullProperties(Dev dev) {
 		if(dev==null) return false;
 		
 		Dev existed = devRepository.findOne(dev.getId());
@@ -121,20 +168,22 @@ public class DevService {
 	}
 
 	public Long delete(Long id) {
-		Dev existed = devRepository.findOne(id);
-		if(existed!=null) {
-			devRepository.delete(id);
-			return id;
+		Dev dev = devRepository.findOne(id);
+		return delete(dev);
+	}
+	
+	private Long delete(Dev dev) {
+		if(dev!=null) {
+			for(Dev child : dev.getChildren()) {
+				delete(child);
+			}			
+			devRepository.delete(dev.getId());
+			return dev.getId();
 		}
 		return (long)-1;
 	}
 
-	public void deleteBySite(Long siteId) {
-		devRepository.deleteBySiteId(siteId);
-	}
-
-	
-	public List<SimpleDev> getAllSimple() {
+	/*public List<SimpleDev> getAllSimple() {
 		List<Dev> devs = new ArrayList<>();
 		devRepository.findAll().forEach(devs::add);
 		
@@ -143,7 +192,7 @@ public class DevService {
 			simpleDevs.add(new SimpleDev(dev.getId(), dev.getLocalId(),dev.getName()));
 		}
 		return simpleDevs;
-	}
+	}*/
 	
 	public boolean isVarBelongs(Dev dev, Long varId) {
 		if(dev==null) return false;

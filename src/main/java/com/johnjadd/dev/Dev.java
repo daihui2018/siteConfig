@@ -1,14 +1,14 @@
 package com.johnjadd.dev;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -18,31 +18,37 @@ import com.johnjadd.var.Var;
 
 @Entity
 @Table(name="dev_config")
-@JsonIgnoreProperties({"site"})
+@JsonIgnoreProperties({"site", "parent"})
 public class Dev implements MyEntity{
 	@Id
 	private Long id;
-	private String localId;
 	private String name;
-	private Boolean dead;
+	private String localId;
 	
-	@ManyToOne
-	@JoinColumn(name="site")
+	@OneToOne
+	@PrimaryKeyJoinColumn
 	private Site site;
 	
 	@OneToMany(mappedBy="dev", cascade=CascadeType.ALL)
 	private List<Var> vars;
 	
+	@ManyToOne
+	//@JoinColumn(name="parent")
+	private Dev parent;
+	
+	@OneToMany(mappedBy="parent")
+	private List<Dev> children;
+	
+	
 	protected Dev() {
 	}
 
-	public Dev(Long id, String localId, String name, Site site) {
+	public Dev(Long id, String localId, String name, Dev parent) {
 		super();
 		this.id = id;
 		this.localId = localId;
 		this.name = name;
-		this.site = site;
-		this.dead = false;
+		this.parent = parent;
 	}
 
 	public Long getId() {
@@ -69,12 +75,12 @@ public class Dev implements MyEntity{
 		this.name = name;
 	}
 
-	public Site getSite() {
-		return site;
+	public List<Dev> getChildren() {
+		return children;
 	}
 
-	public void setSite(Site site) {
-		this.site = site;
+	public void setChildren(List<Dev> children) {
+		this.children = children;
 	}
 
 	public List<Var> getVars() {
@@ -85,13 +91,38 @@ public class Dev implements MyEntity{
 		this.vars = vars;
 	}
 
-	public Boolean getDead() {
-		return dead;
+	public Dev getParent() {
+		return parent;
 	}
 
-	public void setDead(Boolean dead) {
-		this.dead = dead;
+	public void setParent(Dev parent) {
+		this.parent = parent;
 	}
+
+	public Site getSite() {
+		return site;
+	}
+
+	public void setSite(Site site) {
+		this.site = site;
+	}
+	
+	public boolean hasOffSpring(Long devId) {
+		for(Dev dd : this.getChildren()) {
+			if(dd.id.equals(devId)) {
+				return true;
+			}
+		}
+		
+		for(Dev dd : this.getChildren()) {
+			if(dd.hasOffSpring(devId)==true) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
 }
 
 	

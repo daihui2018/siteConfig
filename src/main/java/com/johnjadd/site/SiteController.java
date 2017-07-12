@@ -17,8 +17,8 @@ public class SiteController {
 	private SiteService siteService;
 	
 	@RequestMapping(method=RequestMethod.GET, value="")
-	public List<SimpleSite> getAllSites(){
-		return siteService.getAllSimple();
+	public List<Site> getAllSites(){
+		return siteService.getAll();
 	}
 	
 	@RequestMapping(method=RequestMethod.GET, value="/{id}")

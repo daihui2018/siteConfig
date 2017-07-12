@@ -51,11 +51,13 @@ public class VarService {
 		return true;
 	}
 	
-	public void patch(Var var) {
+	public void patch(Long devId, Var var) {
 		if(var==null) return;
 		
 		if(fillNullProperties(var)) {
-			varRepository.save(var);
+			if(var.getDev().getId().equals(devId)){
+				varRepository.save(var);
+			}
 		}
 	}
 	

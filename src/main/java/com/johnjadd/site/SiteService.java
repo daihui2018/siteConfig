@@ -21,19 +21,29 @@ public class SiteService {
 	//@Autowired
 	//private IdGenService idGenService;
 	
-	public List<SimpleSite> getAllSimple() {
+	public List<Site> getAll() {
 		List<Site> sites = new ArrayList<>();
 		siteRepository.findAll().forEach(sites::add);
 		
-		List<SimpleSite> simpleSites = new ArrayList<>();
-		for (Site site : sites) {
-			simpleSites.add(new SimpleSite(site.getId(), site.getName()));
+		for(Site st : sites) {
+			st.setDev(null);
 		}
-		return simpleSites;
+		return sites;
 	}
 
 	public Site getOne(Long id) {
-		return siteRepository.findOne(id);
+		Site site = siteRepository.findOne(id);
+		/*List<Dev> devsWaittoDelete = new ArrayList<>();
+		for(Dev dev : site.getDevs()) {
+			if(dev.getParent()!=null) {
+				devsWaittoDelete.add(dev);
+			}
+		}
+		for(Dev dev : devsWaittoDelete) {
+			site.getDevs().remove(dev);
+		}*/
+		
+		return site;
 	}
 	
 	public void save(Site site) {			
@@ -58,7 +68,7 @@ public class SiteService {
 	public boolean correctId(Site site) {
 		if(site == null) return false;
 		
-		if(site.getDevs() != null) {
+		/*if(site.getDevs() != null) {
 			List<Dev> illegalIdDevs = new ArrayList<>();
 			for (Dev dev : site.getDevs()) {
 				if(devService.correctId(dev) == false) {
@@ -66,7 +76,8 @@ public class SiteService {
 				}
 			}
 			site.getDevs().removeAll(illegalIdDevs);
-		}
+		}*/
+		devService.correctId(site.getDev());
 		/*need to correct site ID???*/
 		return true;
 	}
@@ -77,7 +88,7 @@ public class SiteService {
 		Site existed = siteRepository.findOne(site.getId());
 		if(existed==null) return false;
 		
-		if(site.getDevs() != null) {			
+		/*if(site.getDevs() != null) {			
 			List<Dev> notInDBDevs = new ArrayList<>();
 			for (Dev dev : site.getDevs()) {
 				if(devService.fillNullProperties(dev)==false) {
@@ -85,7 +96,8 @@ public class SiteService {
 				}
 			}
 			site.getDevs().removeAll(notInDBDevs);
-		}
+		}*/
+		
 	
 		Until.copyNonNullProperties(site, existed);
 		Until.copyProperties(existed, site);
@@ -94,20 +106,20 @@ public class SiteService {
 	}
 	
 	public void setSiteInDevs(Site site) {
-		for (Dev dev : site.getDevs()) {
+		/*for (Dev dev : site.getDevs()) {
 			dev.setSite(site);
 			devService.setDevInVars(dev);
-		}
+		}*/
 	}
 	
 	public boolean isDevBelongs(Site site, Long devId) {
-		if(site==null) return false;
+		/*if(site==null) return false;
 		
 		for(Dev dd: site.getDevs()) {
 			if(dd.getId().equals(devId)) {
 				return true;
 			}
-		}
+		}*/
 		return false;
 	}
 	

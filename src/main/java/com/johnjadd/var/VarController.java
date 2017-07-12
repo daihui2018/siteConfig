@@ -27,9 +27,9 @@ public class VarController {
 		return varService.get(id);
 	}
 	
-	@RequestMapping(method=RequestMethod.PATCH, value="")
-	public void patch(@RequestBody Var var){
-		varService.patch(var);
+	@RequestMapping(method=RequestMethod.PATCH, value="/{devId}")
+	public void patch(@PathVariable("devId")Long devId, @RequestBody Var var){
+		varService.patch(devId, var);
 	}
 	
 	@RequestMapping(method=RequestMethod.DELETE, value="/{id}")
@@ -43,7 +43,7 @@ public class VarController {
 		varService.delete(listVarIds);
 	}*/
 	
-	@RequestMapping(method=RequestMethod.POST, value="/bydev/{devId}")
+	@RequestMapping(method=RequestMethod.POST, value="/{devId}")
 	public void save(@PathVariable("devId") Long devId, @RequestBody Var var){
 		varService.save(devId, var);
 	}
